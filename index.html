@@ -10,20 +10,26 @@
 
     <h1>Pokémon Dungeon Crawler</h1>
 
-    <div id="map-view">
+    <div id="starter-select-view">
+        <h2>Choose your Starter Pokémon!</h2>
+        <div id="starter-options">
+            </div>
+    </div>
+
+    <div id="map-view" class="hidden">
         <h2>Dungeon Map</h2>
-        <p>Use Arrow Keys to move. 'E' tiles trigger encounters!</p>
+        <p>Use Arrow Keys to move. 'E' tiles trigger encounters! 'S' tiles are Stores!</p>
         <div id="dungeon-grid-container">
             <div id="dungeon-grid">
                 </div>
         </div>
          <div id="inventory-display" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px;">
-            Inventory: Potions: 0 | Poké Balls: 0 | Wins: 0
+            Inventory: Potions: 0 | Poké Balls: 0 | Wins: 0 | Money: $0
         </div>
-         </div>
+    </div>
 
     <div id="battle-view" class="hidden">
-        <h2>Battle!</h2>
+       <h2>Battle!</h2>
         <div id="game-container">
             <div id="player-pokemon" class="pokemon-card">
                 <h2 id="player-name"></h2>
@@ -33,7 +39,6 @@
                 <p>HP: <span id="player-hp"></span> / <span id="player-max-hp"></span></p>
                 <img id="player-sprite" src="placeholder.png" alt="Player Pokémon" width="96">
             </div>
-
             <div id="opponent-pokemon" class="pokemon-card">
                 <h2 id="opponent-name"></h2>
                 <div class="health-bar-container">
@@ -43,31 +48,26 @@
                 <img id="opponent-sprite" src="placeholder.png" alt="Opponent Pokémon" width="96">
             </div>
         </div>
-
         <div id="actions">
-            <p id="action-prompt">Choose your action:</p>
+             <p id="action-prompt">Choose your action:</p>
+             <div id="battle-buttons" class="button-row"></div>
+             <div id="player-moves" class="button-row hidden"></div>
+             <div id="item-buttons" class="button-row hidden"></div>
+             <div id="switch-pokemon-buttons" class="button-row hidden"></div>
+             <button id="return-to-map-button" class="hidden" style="margin-top:15px;">Return to Map</button>
+         </div>
+         <div id="message-log-container">
+             <h3>Battle Log</h3>
+             <div id="message-log"></div>
+         </div>
+    </div>
 
-            <div id="battle-buttons" class="button-row">
-                </div>
-
-            <div id="player-moves" class="button-row hidden">
-                </div>
-
-            <div id="item-buttons" class="button-row hidden">
-                 </div>
-
-             <div id="switch-pokemon-buttons" class="button-row hidden">
-                 </div>
-
-            <button id="return-to-map-button" class="hidden" style="margin-top:15px;">Return to Map</button>
-        </div>
-
-
-        <div id="message-log-container">
-            <h3>Battle Log</h3>
-            <div id="message-log">
-                </div>
-        </div>
+    <div id="store-view" class="hidden">
+        <h2>Poké Mart</h2>
+        <div id="store-message" class="store-message">Welcome!</div>
+        <div id="store-money" class="store-money-display">Your Money: $0</div>
+        <ul id="store-item-list"></ul>
+        <button id="leave-store-button" onclick="closeStore()">Leave Store</button>
     </div>
 
     <script src="script.js"></script>

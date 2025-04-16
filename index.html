@@ -17,6 +17,9 @@
             <div id="dungeon-grid">
                 </div>
         </div>
+         <div id="inventory-display" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px;">
+            Inventory: Potions: 0 | Poké Balls: 0 | Wins: 0
+        </div>
          </div>
 
     <div id="battle-view" class="hidden">
@@ -42,17 +45,28 @@
         </div>
 
         <div id="actions">
-            <p id="action-prompt">Choose your move:</p>
-            <div id="player-moves">
+            <p id="action-prompt">Choose your action:</p>
+
+            <div id="battle-buttons" class="button-row">
                 </div>
-            <button id="return-to-map-button" class="hidden">Return to Map</button>
+
+            <div id="player-moves" class="button-row hidden">
+                </div>
+
+            <div id="item-buttons" class="button-row hidden">
+                 </div>
+
+             <div id="switch-pokemon-buttons" class="button-row hidden">
+                 </div>
+
+            <button id="return-to-map-button" class="hidden" style="margin-top:15px;">Return to Map</button>
         </div>
+
 
         <div id="message-log-container">
             <h3>Battle Log</h3>
             <div id="message-log">
-                <p>Battle starts!</p>
-            </div>
+                </div>
         </div>
     </div>
 

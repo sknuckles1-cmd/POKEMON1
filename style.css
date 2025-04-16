@@ -1,127 +1,48 @@
-body {
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #f0f0f0;
-    padding: 20px;
-}
+/* --- Keep all previous styles --- */
 
-h1, h3 {
-    color: #333;
-}
-
-#game-container {
-    display: flex;
-    justify-content: space-around;
+/* --- Add/Modify these styles --- */
+#actions {
+    margin-top: 20px;
     width: 100%;
     max-width: 600px;
-    margin-bottom: 20px;
-    gap: 20px; /* Add space between cards */
+    text-align: center; /* Center the content */
 }
 
-.pokemon-card {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    width: 45%; /* Adjust width for spacing */
+#actions p {
+    margin-bottom: 10px;
+    font-weight: bold;
 }
 
-.pokemon-card img {
-    margin-top: 10px;
-    border: 1px solid #eee;
-    background-color: #fafafa;
-    min-height: 96px; /* Ensure space even if image fails */
+#player-moves {
+    display: flex; /* Arrange buttons in a row */
+    flex-wrap: wrap; /* Allow buttons to wrap onto the next line */
+    justify-content: center; /* Center buttons horizontally */
+    gap: 10px; /* Add space between buttons */
 }
 
-.health-bar-container {
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    height: 20px;
-    margin: 10px 0;
-    overflow: hidden; /* Ensure inner bar stays contained */
-    border: 1px solid #c0c0c0;
-}
-
-.health-bar {
-    background-color: #4CAF50; /* Green */
-    height: 100%;
-    width: 100%; /* Start at full health */
-    border-radius: 4px;
-    transition: width 0.5s ease-in-out; /* Smooth transition */
-}
-
-.health-bar.low {
-    background-color: #ff9800; /* Orange */
-}
-
-.health-bar.critical {
-    background-color: #f44336; /* Red */
-}
-
-
-#actions button {
-    padding: 10px 20px;
-    font-size: 16px;
+/* Style for the dynamically generated move buttons */
+#player-moves button {
+    padding: 8px 15px;
+    font-size: 14px;
     cursor: pointer;
-    background-color: #4a90e2;
+    background-color: #4a90e2; /* Blue */
     color: white;
     border: none;
     border-radius: 5px;
-    margin: 5px;
+    min-width: 100px; /* Give buttons a minimum width */
     transition: background-color 0.2s;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 
-#actions button:hover {
+#player-moves button:hover:not(:disabled) { /* Only hover effect when enabled */
     background-color: #357abd;
 }
 
-#actions button:disabled {
-    background-color: #ccc;
+#player-moves button:disabled {
+    background-color: #cccccc; /* Grey out when disabled */
+    color: #666666;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
-
-#message-log-container {
-    width: 100%;
-    max-width: 600px;
-    margin-top: 20px;
-    text-align: center;
-}
-
-#message-log {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    height: 100px;
-    overflow-y: scroll; /* Add scroll for long logs */
-    padding: 10px;
-    margin-top: 5px;
-    text-align: left;
-    border-radius: 5px;
-}
-
-#message-log p {
-    margin: 5px 0;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 3px;
-}
-
-#message-log p:last-child {
-    border-bottom: none;
-}
-
-#reset-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-#reset-button:hover {
-    background-color: #d32f2f;
-}
+/* --- Ensure other styles are still present --- */

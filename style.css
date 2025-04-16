@@ -43,7 +43,9 @@ h1, h2, h3 {
 .grid-cell {
     width: 40px;  /* Size of each cell */
     height: 40px; /* Size of each cell */
-    background-color: #d3d3d3; /* Default floor color */
+    background-color: #90EE90; /* LightGreen */
+/* Optionally add a subtle border */
+    border: 1px solid #78c878; /* Slightly darker green border */
     display: flex;
     justify-content: center;
     align-items: center;

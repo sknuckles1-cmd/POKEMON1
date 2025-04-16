@@ -64,6 +64,8 @@ h1, h2, h3 {
     position: absolute;
     top: 2px;
     right: 4px;
+    font-weight: bold;
+    text-shadow: 1px 1px #fff;
 }
 
 .grid-cell .player {
@@ -74,6 +76,19 @@ h1, h2, h3 {
     border: 2px solid #fff;
     box-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
+
+/* Inventory Display Style */
+#inventory-display {
+    font-size: 0.9em;
+    color: #333;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    text-align: center;
+}
+
 
 /* --- Battle View Styling (Reverting to Side-by-Side) --- */
 #battle-view {
@@ -109,6 +124,7 @@ h1, h2, h3 {
 .pokemon-card h2 {
     margin-bottom: 10px;
     font-size: 1.3em;
+    color: #333;
 }
 
 .pokemon-card img {
@@ -117,6 +133,8 @@ h1, h2, h3 {
     background-color: #f7f7f7;
     min-height: 96px;
     image-rendering: pixelated; /* Keep sprites crisp */
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
 }
 
 .health-bar-container {
@@ -149,57 +167,88 @@ h1, h2, h3 {
 }
 
 #actions p#action-prompt {
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* More space below prompt */
     font-weight: bold;
+    font-size: 1.1em;
+    color: #444;
 }
 
-#player-moves {
+/* Style for rows containing action/move/item/switch buttons */
+.button-row {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px; /* Space before return button */
+    gap: 10px; /* Space between buttons */
+    margin-bottom: 15px; /* Space below row */
 }
 
-#player-moves button {
-    padding: 8px 15px;
-    font-size: 14px;
+/* General style for buttons in action rows */
+.button-row button {
+    padding: 10px 18px; /* Slightly larger buttons */
+    font-size: 15px;
     cursor: pointer;
-    background-color: #5a8ced; /* Button color */
     color: white;
     border: none;
     border-radius: 5px;
-    min-width: 110px; /* Slightly wider buttons */
+    min-width: 100px;
     transition: background-color 0.2s;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
-
-#player-moves button:hover:not(:disabled) {
-    background-color: #3a75e2;
-}
-
-#player-moves button:disabled {
-    background-color: #cccccc;
-    color: #666666;
+.button-row button:disabled {
+    background-color: #cccccc !important; /* Use important to override specific styles */
+    color: #666666 !important;
     cursor: not-allowed;
     box-shadow: none;
 }
+.button-row button:hover:not(:disabled) {
+     filter: brightness(1.1); /* General hover effect */
+}
 
+
+/* Specific colors for main action buttons */
+#battle-buttons button:nth-child(1) { background-color: #c82333; } /* Fight Red */
+#battle-buttons button:nth-child(2) { background-color: #ffc107; color:#333; } /* Items Yellow */
+#battle-buttons button:nth-child(3) { background-color: #17a2b8; } /* Switch Cyan */
+
+
+/* Style for item/switch buttons */
+#item-buttons button,
+#switch-pokemon-buttons button {
+    background-color: #6c757d; /* Default grey */
+}
+#item-buttons button[disabled],
+#switch-pokemon-buttons button[disabled] {
+     opacity: 0.7;
+}
+
+
+/* Style specifically for move buttons */
+#player-moves button {
+    background-color: #5a8ced; /* Original Blue move buttons */
+    min-width: 110px;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+
+/* Return to map button */
 #return-to-map-button {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #6c757d; /* Grey button */
+    background-color: #28a745; /* Green button */
     color: white;
     border: none;
     border-radius: 5px;
     margin-top: 10px;
+    transition: background-color 0.2s;
 }
 #return-to-map-button:hover {
-    background-color: #5a6268;
+    background-color: #218838;
 }
 
 
+/* Message Log */
 #message-log-container {
     width: 100%;
     max-width: 650px;
@@ -217,6 +266,7 @@ h1, h2, h3 {
     text-align: left;
     border-radius: 5px;
     line-height: 1.4;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
 }
 
 #message-log p {

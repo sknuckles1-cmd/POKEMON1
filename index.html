@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pokémon Battle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Simple Pokémon Battle</h1>
+
+    <div id="game-container">
+        <div id="player-pokemon" class="pokemon-card">
+            <h2 id="player-name"></h2>
+            <div class="health-bar-container">
+                <div id="player-health-bar" class="health-bar"></div>
+            </div>
+            <p>HP: <span id="player-hp"></span> / <span id="player-max-hp"></span></p>
+            <img id="player-sprite" src="placeholder.png" alt="Player Pokémon" width="96">
+        </div>
+
+        <div id="opponent-pokemon" class="pokemon-card">
+            <h2 id="opponent-name"></h2>
+             <div class="health-bar-container">
+                <div id="opponent-health-bar" class="health-bar"></div>
+            </div>
+            <p>HP: <span id="opponent-hp"></span> / <span id="opponent-max-hp"></span></p>
+             <img id="opponent-sprite" src="placeholder.png" alt="Opponent Pokémon" width="96">
+        </div>
+    </div>
+
+    <div id="actions">
+        <button id="attack-button">Attack</button>
+        </div>
+
+    <div id="message-log-container">
+        <h3>Battle Log</h3>
+        <div id="message-log">
+            <p>Battle starts!</p>
+        </div>
+    </div>
+
+    <button id="reset-button" style="display: none; margin-top: 20px;">Play Again?</button>
+
+    <script src="script.js"></script>
+</body>
+</html>

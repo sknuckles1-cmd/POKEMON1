@@ -1,48 +1,228 @@
-/* --- Keep all previous styles --- */
-
-/* --- Add/Modify these styles --- */
-#actions {
-    margin-top: 20px;
-    width: 100%;
-    max-width: 600px;
-    text-align: center; /* Center the content */
+/* --- General Body Styling --- */
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #e8e8e8; /* Slightly different background */
+    padding: 20px;
+    min-height: 100vh;
 }
 
-#actions p {
+h1, h2, h3 {
+    color: #333;
+    text-align: center;
+}
+
+/* --- Utility Class --- */
+.hidden {
+    display: none !important; /* Use !important to ensure override */
+}
+
+/* --- Map View Styling --- */
+#map-view {
+    width: 100%;
+    max-width: 500px; /* Adjust as needed */
+    text-align: center;
+}
+
+#dungeon-grid-container {
+    margin: 20px auto;
+    border: 3px solid #555;
+    background-color: #aaa;
+    display: inline-block; /* Fit container to grid size */
+}
+
+#dungeon-grid {
+    display: grid;
+    /* Grid columns/rows will be set by JS */
+    gap: 1px; /* Thin lines between cells */
+    background-color: #555; /* Grid line color */
+}
+
+.grid-cell {
+    width: 40px;  /* Size of each cell */
+    height: 40px; /* Size of each cell */
+    background-color: #d3d3d3; /* Default floor color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    position: relative; /* For player positioning */
+}
+
+.grid-cell.wall {
+    background-color: #696969; /* Dark grey for walls */
+    border: 1px outset #888;
+}
+
+.grid-cell.encounter::after { /* Mark encounter tiles */
+    content: 'E';
+    color: #b30000;
+    font-size: 0.8em;
+    position: absolute;
+    top: 2px;
+    right: 4px;
+}
+
+.grid-cell .player {
+    width: 70%;
+    height: 70%;
+    background-color: #4a90e2; /* Blue player marker */
+    border-radius: 50%; /* Circle */
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* --- Battle View Styling (Reverting to Side-by-Side) --- */
+#battle-view {
+    width: 100%;
+    max-width: 700px; /* Wider container for side-by-side */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Re-apply side-by-side layout for battle cards */
+#game-container {
+    display: flex;
+    justify-content: space-around; /* Space out cards */
+    width: 100%;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.pokemon-card {
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
+    width: 45%; /* Two cards side-by-side */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pokemon-card h2 {
+    margin-bottom: 10px;
+    font-size: 1.3em;
+}
+
+.pokemon-card img {
+    margin-top: 10px;
+    border: 1px solid #eee;
+    background-color: #f7f7f7;
+    min-height: 96px;
+    image-rendering: pixelated; /* Keep sprites crisp */
+}
+
+.health-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    height: 20px;
+    width: 80%; /* Make health bar slightly smaller than card */
+    margin: 10px 0;
+    overflow: hidden;
+    border: 1px solid #b0b0b0;
+}
+
+.health-bar {
+    background-color: #4CAF50; /* Green */
+    height: 100%;
+    width: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+
+.health-bar.low { background-color: #ffc107; } /* Amber */
+.health-bar.critical { background-color: #f44336;} /* Red */
+
+/* Actions and Message Log Styling */
+#actions {
+    margin-top: 10px; /* Reduced margin */
+    width: 100%;
+    max-width: 650px;
+    text-align: center;
+}
+
+#actions p#action-prompt {
     margin-bottom: 10px;
     font-weight: bold;
 }
 
 #player-moves {
-    display: flex; /* Arrange buttons in a row */
-    flex-wrap: wrap; /* Allow buttons to wrap onto the next line */
-    justify-content: center; /* Center buttons horizontally */
-    gap: 10px; /* Add space between buttons */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px; /* Space before return button */
 }
 
-/* Style for the dynamically generated move buttons */
 #player-moves button {
     padding: 8px 15px;
     font-size: 14px;
     cursor: pointer;
-    background-color: #4a90e2; /* Blue */
+    background-color: #5a8ced; /* Button color */
     color: white;
     border: none;
     border-radius: 5px;
-    min-width: 100px; /* Give buttons a minimum width */
+    min-width: 110px; /* Slightly wider buttons */
     transition: background-color 0.2s;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 
-#player-moves button:hover:not(:disabled) { /* Only hover effect when enabled */
-    background-color: #357abd;
+#player-moves button:hover:not(:disabled) {
+    background-color: #3a75e2;
 }
 
 #player-moves button:disabled {
-    background-color: #cccccc; /* Grey out when disabled */
+    background-color: #cccccc;
     color: #666666;
     cursor: not-allowed;
     box-shadow: none;
 }
 
-/* --- Ensure other styles are still present --- */
+#return-to-map-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #6c757d; /* Grey button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+#return-to-map-button:hover {
+    background-color: #5a6268;
+}
+
+
+#message-log-container {
+    width: 100%;
+    max-width: 650px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+#message-log {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    height: 120px; /* Slightly taller log */
+    overflow-y: scroll;
+    padding: 10px;
+    margin-top: 5px;
+    text-align: left;
+    border-radius: 5px;
+    line-height: 1.4;
+}
+
+#message-log p {
+    margin: 2px 0 5px 0;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 4px;
+    font-size: 0.95em;
+}
+#message-log p:last-child { border-bottom: none; }

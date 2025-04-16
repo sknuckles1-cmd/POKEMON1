@@ -86,14 +86,16 @@ const returnToMapButton = document.getElementById('return-to-map-button');
 
 // --- Game Initialization ---
 function initializeGame() {
+    // Setup initial player party and state
     player.party = [];
     const startingPokemon = JSON.parse(JSON.stringify(pokemonData.pikachu));
     startingPokemon.hp = startingPokemon.maxHp;
     player.party.push(startingPokemon);
     player.activePokemonIndex = 0;
     player.wins = 0;
-    player.inventory = { potions: 2, pokeballs: 5 }; // Reset inventory too
+    player.inventory = { potions: 2, pokeballs: 5 }; // Reset inventory
 
+    // Find player starting position on the map
     for (let y = 0; y < mapRows; y++) {
         for (let x = 0; x < mapCols; x++) {
             if (dungeonLayout[y][x] === TILE_TYPES.PLAYER_START) {
@@ -102,14 +104,16 @@ function initializeGame() {
             }
         }
     }
+    // Setup map and initial view
     setupMapGrid();
     renderMap();
     updateInventoryDisplay();
-    switchMode('map');
+    switchMode('map'); // Start in map mode
 }
 
 // --- Inventory Display ---
 function updateInventoryDisplay() {
+    // Update the text content of the inventory display element
     if (inventoryDisplay) {
         inventoryDisplay.innerHTML = `
             Inventory:
@@ -122,21 +126,24 @@ function updateInventoryDisplay() {
 
 // --- Mode Switching ---
 function switchMode(newMode) {
+    // Toggle visibility of map and battle views
     currentMode = newMode;
     if (newMode === 'map') {
         mapView.classList.remove('hidden');
         battleView.classList.add('hidden');
-        renderMap();
-        updateInventoryDisplay();
+        renderMap(); // Re-render map when returning
+        updateInventoryDisplay(); // Update inventory display
     } else { // 'battle'
         mapView.classList.add('hidden');
         battleView.classList.remove('hidden');
+        // Battle initialization happens in startBattle()
     }
 }
 
 // --- Map Rendering and Logic ---
 function setupMapGrid() {
-    dungeonGrid.innerHTML = '';
+    // Create the grid cells for the map based on dimensions
+    dungeonGrid.innerHTML = ''; // Clear previous grid
     dungeonGrid.style.gridTemplateColumns = `repeat(${mapCols}, 40px)`;
     dungeonGrid.style.gridTemplateRows = `repeat(${mapRows}, 40px)`;
 
@@ -144,26 +151,29 @@ function setupMapGrid() {
         for (let x = 0; x < mapCols; x++) {
             const cell = document.createElement('div');
             cell.classList.add('grid-cell');
-            cell.id = `cell-${x}-${y}`;
+            cell.id = `cell-${x}-${y}`; // Assign unique ID for later reference
             dungeonGrid.appendChild(cell);
         }
     }
 }
 
 function renderMap() {
-    if (currentMode !== 'map') return;
+    // Update the appearance of map cells based on layout and player position
+    if (currentMode !== 'map') return; // Only render if in map mode
 
     for (let y = 0; y < mapRows; y++) {
         for (let x = 0; x < mapCols; x++) {
             const cell = document.getElementById(`cell-${x}-${y}`);
-            cell.className = 'grid-cell';
-            cell.innerHTML = '';
+            cell.className = 'grid-cell'; // Reset classes
+            cell.innerHTML = ''; // Clear player marker or other content
 
             const tileType = dungeonLayout[y][x];
 
+            // Apply styles based on tile type
             if (tileType === TILE_TYPES.WALL) cell.classList.add('wall');
             else if (tileType === TILE_TYPES.ENCOUNTER) cell.classList.add('encounter');
 
+            // Draw player marker in the current cell
             if (x === playerPos.x && y === playerPos.y) {
                 const playerMarker = document.createElement('div');
                 playerMarker.classList.add('player');
@@ -175,34 +185,44 @@ function renderMap() {
 
 // --- Player Movement ---
 function handleKeydown(event) {
-    if (currentMode !== 'map' || battleOver) return;
+    // Handle player movement input via arrow keys
+    if (currentMode !== 'map' || battleOver) return; // Only allow movement on map
 
     let dx = 0;
     let dy = 0;
 
+    // Determine direction from key press
     switch (event.key) {
         case 'ArrowUp': dy = -1; break;
         case 'ArrowDown': dy = 1; break;
         case 'ArrowLeft': dx = -1; break;
         case 'ArrowRight': dx = 1; break;
-        default: return;
+        default: return; // Ignore other keys
     }
 
-    event.preventDefault();
+    event.preventDefault(); // Prevent page scrolling with arrow keys
 
     const targetX = playerPos.x + dx;
     const targetY = playerPos.y + dy;
 
-    if (targetX < 0 || targetX >= mapCols || targetY < 0 || targetY >= mapRows) return;
+    // Check map boundaries
+    if (targetX < 0 || targetX >= mapCols || targetY < 0 || targetY >= mapRows) {
+        return; // Out of bounds
+    }
 
+    // Check for walls
     const targetTile = dungeonLayout[targetY][targetX];
-    if (targetTile === TILE_TYPES.WALL) return;
+    if (targetTile === TILE_TYPES.WALL) {
+        return; // Cannot move into wall
+    }
 
+    // Update player position
     playerPos.x = targetX;
     playerPos.y = targetY;
 
-    renderMap();
+    renderMap(); // Re-render map to show new player position
 
+    // Check if the new tile triggers an encounter
     if (targetTile === TILE_TYPES.ENCOUNTER) {
         startBattle();
     }
@@ -211,103 +231,115 @@ function handleKeydown(event) {
 // --- Battle Logic ---
 
 function startBattle() {
+    // Initiate a battle sequence
     console.log("Starting battle!");
+    // Select a random opponent
     const opponents = [pokemonData.charmander, pokemonData.rattata];
     const randomOpponentData = opponents[Math.floor(Math.random() * opponents.length)];
-    opponentPokemon = JSON.parse(JSON.stringify(randomOpponentData));
+    opponentPokemon = JSON.parse(JSON.stringify(randomOpponentData)); // Deep copy opponent data
 
+    // Check if player's current Pokemon is fainted, force switch if possible
     if (getActivePlayerPokemon().hp <= 0) {
         const availableIndex = player.party.findIndex((p, index) => index !== player.activePokemonIndex && p.hp > 0);
         if (availableIndex !== -1) {
+            // Switch to the first available healthy Pokemon
             player.activePokemonIndex = availableIndex;
             console.log(`Forced switch to ${getActivePlayerPokemon().name}!`);
-            // Need to log this better in initializeBattleScreen
+            // Message will be logged properly in initializeBattleScreen
         } else {
+             // No healthy Pokemon left - Game Over scenario
              alert("All your Pokémon have fainted! Game Over (conceptually). Returning to map.");
-             // Ideally, implement proper game over or heal station
-             switchMode('map');
-             return;
+             // Future: Implement proper game over screen or return to heal spot
+             switchMode('map'); // Go back to map for now
+             return; // Stop battle initiation
         }
     }
 
+    // Setup the battle screen UI and switch modes
     initializeBattleScreen();
     switchMode('battle');
 }
 
+// Helper function to safely get the currently active player Pokémon
 function getActivePlayerPokemon() {
-    // Add a check in case party is empty or index is invalid (shouldn't happen with current logic, but safe)
     if (!player.party || player.party.length === 0 || player.activePokemonIndex >= player.party.length || player.activePokemonIndex < 0) {
         console.error("Invalid player party state!");
-        // Return a dummy object or handle error appropriately
-        return { name: "Error", hp: 0, maxHp: 0, sprite: "", moves: [] };
+        // Return a dummy object to prevent further errors down the line
+        return { id: 0, speciesName: 'error', name: "Error", hp: 0, maxHp: 0, sprite: "", moves: [], evolvesAtWins: undefined, evolution: undefined };
     }
     return player.party[player.activePokemonIndex];
 }
 
 
+// Sets up the battle screen UI elements
 function initializeBattleScreen() {
+    // Reset battle state variables
     isPlayerTurn = true;
     battleOver = false;
-    justEvolved = false;
+    justEvolved = false; // Reset evolution flag for the new battle
 
-    messageLog.innerHTML = ''; // Clear log first
+    messageLog.innerHTML = ''; // Clear previous battle log
     const activePokemon = getActivePlayerPokemon();
 
-    // Log forced switch if needed
-     if (activePokemon.hp <= 0) {
-         // This case should be handled by startBattle now, but log just in case.
-         logMessage(`Previous Pokémon fainted! Sending out ${activePokemon.name}!`);
-     }
-
-
+    // Update UI elements with current battle data
     updateBattleDisplay();
-    generatePlayerMoveButtons(); // Needs to be called *after* activePokemon is set
-    generateBattleActionButtons();
+    generatePlayerMoveButtons(); // Generate moves for the active Pokemon
+    generateBattleActionButtons(); // Generate Fight/Item/Switch buttons
 
+    // Hide sub-action containers initially
     itemButtonsContainer.classList.add('hidden');
     switchPokemonContainer.classList.add('hidden');
-    playerMovesContainer.classList.add('hidden'); // Moves are hidden until "Fight" is clicked
+    playerMovesContainer.classList.add('hidden'); // Moves shown only after clicking "Fight"
 
+    // Set Pokémon sprites
     playerSpriteEl.src = activePokemon.sprite;
-    playerSpriteEl.onerror = () => playerSpriteEl.src = 'placeholder.png';
+    playerSpriteEl.onerror = () => playerSpriteEl.src = 'placeholder.png'; // Fallback image
     opponentSpriteEl.src = opponentPokemon.sprite;
-    opponentSpriteEl.onerror = () => opponentSpriteEl.src = 'placeholder.png';
+    opponentSpriteEl.onerror = () => opponentSpriteEl.src = 'placeholder.png'; // Fallback image
 
+    // Log initial battle messages
     logMessage(`A wild ${opponentPokemon.name} appeared!`);
-    if (activePokemon.hp > 0) { // Only log go if the Pokémon wasn't just force-switched in fainted
+    // Check if the active Pokemon just got switched in due to fainting
+    if (activePokemon.hp > 0) {
         logMessage(`Go, ${activePokemon.name}!`);
+    } else {
+         logMessage(`Previous Pokémon fainted! Sending out ${activePokemon.name}!`);
     }
 
 
     actionPrompt.textContent = "Choose your action:";
-    returnToMapButton.classList.add('hidden');
+    returnToMapButton.classList.add('hidden'); // Hide return button until battle ends
 }
 
+// Generates the main action buttons (Fight, Items, Switch)
 function generateBattleActionButtons() {
     battleButtonsContainer.innerHTML = `
         <button onclick="showMoveButtons()">Fight</button>
         <button onclick="showItemButtons()">Items</button>
         <button onclick="showSwitchButtons()">Switch</button>
     `;
-    battleButtonsContainer.classList.remove('hidden');
+    battleButtonsContainer.classList.remove('hidden'); // Ensure this row is visible
 }
 
+// --- UI Visibility Toggles ---
 function showMoveButtons() {
-    // Don't allow fighting if current pokemon is fainted
+    // Check if the current Pokémon can fight
     if (getActivePlayerPokemon().hp <= 0) {
         logMessage(`${getActivePlayerPokemon().name} has fainted and cannot fight!`);
         actionPrompt.textContent = "Choose another action (Switch recommended).";
-        return;
+        return; // Don't show moves
     }
+    // Show move buttons, hide others
     playerMovesContainer.classList.remove('hidden');
     battleButtonsContainer.classList.add('hidden');
     itemButtonsContainer.classList.add('hidden');
     switchPokemonContainer.classList.add('hidden');
     actionPrompt.textContent = "Choose your move:";
-    if(isPlayerTurn && !battleOver) enableMoveButtons();
+    if(isPlayerTurn && !battleOver) enableMoveButtons(); // Enable them if it's player's turn
 }
 
 function showItemButtons() {
+    // Generate and show item buttons, hide others
     generateItemButtons();
     itemButtonsContainer.classList.remove('hidden');
     playerMovesContainer.classList.add('hidden');
@@ -317,6 +349,7 @@ function showItemButtons() {
 }
 
 function showSwitchButtons() {
+    // Generate and show switch buttons, hide others
     generateSwitchButtons();
     switchPokemonContainer.classList.remove('hidden');
     playerMovesContainer.classList.add('hidden');
@@ -324,391 +357,473 @@ function showSwitchButtons() {
     itemButtonsContainer.classList.add('hidden');
     actionPrompt.textContent = "Choose a Pokémon to switch to:";
 }
+// --- End UI Visibility Toggles ---
 
+// Generates move buttons for the currently active Pokémon
 function generatePlayerMoveButtons() {
-    playerMovesContainer.innerHTML = '';
+    playerMovesContainer.innerHTML = ''; // Clear previous buttons
     const currentPokemon = getActivePlayerPokemon();
-    // Check if currentPokemon and moves exist
+    // Safety check for pokemon data
     if (!currentPokemon || !currentPokemon.moves) {
         console.error("Error generating moves: Active Pokemon or moves undefined", currentPokemon);
-        return; // Prevent error if state is somehow invalid
+        return;
     }
+    // Create a button for each move
     currentPokemon.moves.forEach(move => {
         const button = document.createElement('button');
         button.textContent = move.name;
         button.addEventListener('click', () => handlePlayerMove(move));
         playerMovesContainer.appendChild(button);
     });
-     // Keep hidden until "Fight" clicked, handled by showMoveButtons
+    // Note: Visibility is controlled by showMoveButtons()
 }
 
+// Updates the battle display (names, HP, health bars, sprites)
 function updateBattleDisplay() {
     const activePokemon = getActivePlayerPokemon();
-    // Player side
+    // Player side display update
     playerNameEl.textContent = activePokemon.name;
     playerHpEl.textContent = activePokemon.hp;
     playerMaxHpEl.textContent = activePokemon.maxHp;
     updateHealthBar(playerHealthBarEl, activePokemon.hp, activePokemon.maxHp);
+    // Update sprite only if it changed (e.g., evolution)
     if (playerSpriteEl.src !== activePokemon.sprite && activePokemon.sprite) {
          playerSpriteEl.src = activePokemon.sprite;
     }
 
-    // Opponent side
+    // Opponent side display update
     opponentNameEl.textContent = opponentPokemon.name;
     opponentHpEl.textContent = opponentPokemon.hp;
     opponentMaxHpEl.textContent = opponentPokemon.maxHp;
     updateHealthBar(opponentHealthBarEl, opponentPokemon.hp, opponentPokemon.maxHp);
 }
 
+// Updates a single health bar's width and color class
 function updateHealthBar(barElement, currentHp, maxHp) {
-    const percentage = Math.max(0, (currentHp / maxHp) * 100);
-    barElement.style.width = `${percentage}%`;
-    barElement.className = 'health-bar';
-    if (percentage < 25) barElement.classList.add('critical');
-    else if (percentage < 50) barElement.classList.add('low');
+    const percentage = Math.max(0, (currentHp / maxHp) * 100); // Calculate HP percentage
+    barElement.style.width = `${percentage}%`; // Set width
+    // Apply color classes based on HP percentage
+    barElement.className = 'health-bar'; // Reset classes first
+    if (percentage < 25) barElement.classList.add('critical'); // Red
+    else if (percentage < 50) barElement.classList.add('low'); // Yellow/Orange
 }
 
+// Adds a message paragraph to the battle log
 function logMessage(message) {
     const newMessage = document.createElement('p');
     newMessage.textContent = message;
     messageLog.appendChild(newMessage);
+    // Auto-scroll to the latest message
     messageLog.scrollTop = messageLog.scrollHeight;
 }
 
-// --- Actions ---
+// --- Battle Actions ---
 
+// Handles the player selecting and using a move
 function handlePlayerMove(move) {
+    // Check if action is allowed
     if (!isPlayerTurn || battleOver || getActivePlayerPokemon().hp <= 0) return;
-    disableAllButtons();
+    disableAllButtons(); // Disable buttons during animation/opponent turn
 
     const activePokemon = getActivePlayerPokemon();
-    const damage = calculateDamage(move.power);
-    opponentPokemon.hp = Math.max(0, opponentPokemon.hp - damage);
-    logMessage(`${activePokemon.name} used ${move.name}! It dealt ${damage} damage.`);
-    updateBattleDisplay();
+    const damage = calculateDamage(move.power); // Calculate damage using the selected move's power
+    opponentPokemon.hp = Math.max(0, opponentPokemon.hp - damage); // Apply damage, prevent negative HP
 
+    logMessage(`${activePokemon.name} used ${move.name}! It dealt ${damage} damage.`);
+    updateBattleDisplay(); // Update HP bars
+
+    // Check if opponent fainted
     if (opponentPokemon.hp <= 0) {
         logMessage(`${opponentPokemon.name} fainted!`);
-        endBattle(true);
+        endBattle(true); // Player wins
     } else {
+        // If opponent survived, switch turns
         isPlayerTurn = false;
-        setTimeout(opponentTurn, 1500);
+        setTimeout(opponentTurn, 1500); // Opponent attacks after a delay
     }
 }
 
+// Generates buttons for usable items in the inventory
 function generateItemButtons() {
-    itemButtonsContainer.innerHTML = '';
+    itemButtonsContainer.innerHTML = ''; // Clear previous buttons
     let hasUsableItem = false;
 
+    // Create Potion button if available and usable
     if (player.inventory.potions > 0) {
         const button = document.createElement('button');
         button.textContent = `Potion (${player.inventory.potions})`;
         button.onclick = () => usePotion();
-         // Cannot heal fainted pokemon with this potion
+         // Disable if active Pokemon is fainted (cannot heal fainted with this potion)
         if(getActivePlayerPokemon().hp <= 0) button.disabled = true;
         itemButtonsContainer.appendChild(button);
-        if(getActivePlayerPokemon().hp > 0) hasUsableItem = true;
+        if(getActivePlayerPokemon().hp > 0) hasUsableItem = true; // Mark as usable if Pokemon isn't fainted
     }
+    // Create Poké Ball button if available and usable
     if (player.inventory.pokeballs > 0) {
         const button = document.createElement('button');
         button.textContent = `Poké Ball (${player.inventory.pokeballs})`;
+        // Disable if opponent is fainted or HP is too high
         if (opponentPokemon.hp >= opponentPokemon.maxHp * 0.5 || opponentPokemon.hp <= 0) {
              button.disabled = true;
              button.title = opponentPokemon.hp <= 0 ? "Opponent already fainted!" : "Opponent HP must be below 50%!";
         } else {
              button.onclick = () => usePokeball();
-             hasUsableItem = true;
+             hasUsableItem = true; // Mark as usable
         }
         itemButtonsContainer.appendChild(button);
     }
 
+    // Add a "Back" button to return to the main action menu
     const backButton = document.createElement('button');
     backButton.textContent = 'Back';
     backButton.onclick = () => {
-        itemButtonsContainer.classList.add('hidden');
-        generateBattleActionButtons();
+        itemButtonsContainer.classList.add('hidden'); // Hide item buttons
+        generateBattleActionButtons(); // Show main action buttons again
         actionPrompt.textContent = "Choose your action:";
     };
     itemButtonsContainer.appendChild(backButton);
 
+    // Display message if no items are currently usable
     if (!hasUsableItem && itemButtonsContainer.children.length <= 1) { // Check if only Back button exists
         const p = document.createElement('p');
         p.textContent = "No usable items in this situation.";
-        itemButtonsContainer.prepend(p);
+        itemButtonsContainer.prepend(p); // Add message before the Back button
     }
 }
 
 
+// Logic for using a Potion item
 function usePotion() {
+    // Check conditions for using potion
     if (!isPlayerTurn || battleOver || player.inventory.potions <= 0 || getActivePlayerPokemon().hp <= 0) return;
-    disableAllButtons();
+    disableAllButtons(); // Disable buttons during action
 
     const activePokemon = getActivePlayerPokemon();
-    const healAmount = Math.floor(activePokemon.maxHp * 0.4);
+    const healAmount = Math.floor(activePokemon.maxHp * 0.4); // Heal 40% of max HP
     const hpBefore = activePokemon.hp;
-    activePokemon.hp = Math.min(activePokemon.maxHp, activePokemon.hp + healAmount);
-    const healedBy = activePokemon.hp - hpBefore;
+    activePokemon.hp = Math.min(activePokemon.maxHp, activePokemon.hp + healAmount); // Heal up to max HP
+    const healedBy = activePokemon.hp - hpBefore; // Calculate actual amount healed
 
     if (healedBy > 0) {
+        // If healing occurred, consume item and turn
         player.inventory.potions--;
         logMessage(`${activePokemon.name} used a Potion! Healed ${healedBy} HP.`);
-        updateBattleDisplay();
-        updateInventoryDisplay();
+        updateBattleDisplay(); // Update HP bar
+        updateInventoryDisplay(); // Update inventory count display
         isPlayerTurn = false;
-        setTimeout(opponentTurn, 1500);
+        setTimeout(opponentTurn, 1500); // Potion use takes the turn
     } else {
+        // If no healing occurred (already full HP)
         logMessage(`${activePokemon.name}'s HP is already full!`);
-         // Don't consume turn or item if no healing occurred
-        generateItemButtons(); // Regenerate item buttons to re-enable them
-         actionPrompt.textContent = "Choose an item:";
-         itemButtonsContainer.querySelectorAll('button').forEach(b => b.disabled=false); // Re-enable buttons
+         // Don't consume turn or item, re-enable item buttons
+        generateItemButtons();
+        itemButtonsContainer.querySelectorAll('button').forEach(b => b.disabled=false);
+        actionPrompt.textContent = "Choose an item:";
     }
 }
 
+// Logic for using a Poké Ball item
 function usePokeball() {
+     // Check conditions for using Poké Ball
      if (!isPlayerTurn || battleOver || player.inventory.pokeballs <= 0) return;
+     // Double check usability conditions
      if (opponentPokemon.hp >= opponentPokemon.maxHp * 0.5 || opponentPokemon.hp <= 0) {
          logMessage("Cannot throw Poké Ball now!");
-         generateItemButtons(); // Show items again
+         generateItemButtons(); // Show items again, buttons should be correctly disabled/enabled
          return;
      }
-    disableAllButtons();
+    disableAllButtons(); // Disable buttons during capture attempt
 
-    player.inventory.pokeballs--;
+    player.inventory.pokeballs--; // Consume the Poké Ball
     logMessage(`You threw a Poké Ball!`);
-    updateInventoryDisplay();
+    updateInventoryDisplay(); // Update inventory count
 
-    const hpPercent = opponentPokemon.hp / opponentPokemon.maxHp;
-    const captureChance = 0.50 + (0.5 - hpPercent) * 0.9; // Max 95%
+    // Calculate capture chance (higher chance at lower HP)
+    const hpPercent = opponentPokemon.hp / opponentPokemon.maxHp; // Range: 0.0 to < 0.5
+    const captureChance = 0.50 + (0.5 - hpPercent) * 0.9; // Example formula: 50% base + up to 45% bonus (max 95%)
 
-    setTimeout(() => {
+    setTimeout(() => { // Add delay for suspense
         if (Math.random() < captureChance) {
+            // --- Capture Successful ---
             logMessage(`Gotcha! ${opponentPokemon.name} was caught!`);
-            battleOver = true;
+            battleOver = true; // End the battle immediately upon capture
 
+            // Add caught Pokémon to party if space allows (max 6)
             if (player.party.length < 6) {
                 const caughtPokemon = JSON.parse(JSON.stringify(opponentPokemon));
+                // Keep the opponent's current HP when caught
                 player.party.push(caughtPokemon);
                 logMessage(`${caughtPokemon.name} added to your party.`);
             } else {
                 logMessage("Your party is full! Cannot add Pokémon.");
+                // In a full game, this might send to a "Box" system
             }
+
+            // Update UI for capture end state
             actionPrompt.textContent = "Captured!";
-            returnToMapButton.classList.remove('hidden');
+            returnToMapButton.classList.remove('hidden'); // Show return button
+            returnToMapButton.disabled = false; // Explicitly enable the return button
 
         } else {
+            // --- Capture Failed ---
             logMessage(`Oh no! The Pokémon broke free!`);
+            // Failed attempt takes the turn, opponent attacks
             isPlayerTurn = false;
             setTimeout(opponentTurn, 1500);
         }
-    }, 1000);
+    }, 1000); // 1 second delay for capture animation effect
 }
 
+// Generates buttons for switching Pokémon
 function generateSwitchButtons() {
-    switchPokemonContainer.innerHTML = '';
-    let canSwitch = false;
+    switchPokemonContainer.innerHTML = ''; // Clear previous buttons
+    let canSwitch = false; // Flag to check if any valid switch options exist
 
+    // Create a button for each Pokémon in the party
     player.party.forEach((pokemon, index) => {
         const button = document.createElement('button');
         button.textContent = `${pokemon.name} (HP: ${pokemon.hp}/${pokemon.maxHp})`;
 
+        // Disable button if it's the active Pokémon or if it has fainted
         if (index === player.activePokemonIndex || pokemon.hp <= 0) {
             button.disabled = true;
             if (index === player.activePokemonIndex) button.textContent += " - Active";
             if (pokemon.hp <= 0) button.textContent += " - Fainted";
         } else {
+            // Enable button and add click handler for valid switches
             button.onclick = () => handleSwitchPokemon(index);
-            canSwitch = true;
+            canSwitch = true; // Mark that switching is possible
         }
         switchPokemonContainer.appendChild(button);
     });
 
-     const backButton = document.createElement('button');
+     // Add a "Back" button
+    const backButton = document.createElement('button');
     backButton.textContent = 'Back';
     backButton.onclick = () => {
-        switchPokemonContainer.classList.add('hidden');
-        generateBattleActionButtons();
+        switchPokemonContainer.classList.add('hidden'); // Hide switch buttons
+        generateBattleActionButtons(); // Show main actions again
         actionPrompt.textContent = "Choose your action:";
     };
     switchPokemonContainer.appendChild(backButton);
 
+    // Display message if no valid Pokémon to switch to
     if (!canSwitch) {
          const p = document.createElement('p');
         p.textContent = "No other Pokémon available to switch.";
-        switchPokemonContainer.prepend(p);
+        switchPokemonContainer.prepend(p); // Add message before Back button
     }
 }
 
+// Handles the logic for switching the active Pokémon
 function handleSwitchPokemon(partyIndex) {
-    if (!isPlayerTurn || battleOver || partyIndex === player.activePokemonIndex || player.party[partyIndex].hp <= 0) return;
-    disableAllButtons();
+    // Check if switch is valid
+    if (!isPlayerTurn || battleOver || partyIndex === player.activePokemonIndex || player.party[partyIndex].hp <= 0) {
+        return; // Invalid switch attempt
+    }
+    disableAllButtons(); // Disable buttons during switch
 
     const oldPokemonName = getActivePlayerPokemon().name;
-    player.activePokemonIndex = partyIndex;
+    player.activePokemonIndex = partyIndex; // Update the active Pokémon index
     const newPokemon = getActivePlayerPokemon();
 
     logMessage(`Come back, ${oldPokemonName}!`);
     logMessage(`Go, ${newPokemon.name}!`);
 
-    updateBattleDisplay();
-    generatePlayerMoveButtons(); // Setup moves for the new pokemon (hidden initially)
+    updateBattleDisplay(); // Update battle UI with new Pokémon info
+    generatePlayerMoveButtons(); // Generate moves for the new active Pokémon (will be hidden initially)
 
+    // Switching takes the player's turn
     isPlayerTurn = false;
-    setTimeout(opponentTurn, 1500);
+    setTimeout(opponentTurn, 1500); // Opponent attacks after switch
 }
 
+// Handles the opponent's turn logic
 function opponentTurn() {
-    if (battleOver) return;
-    const activePokemon = getActivePlayerPokemon();
+    if (battleOver) return; // Don't act if battle is over
+    const activePokemon = getActivePlayerPokemon(); // Get player's current Pokémon
 
-    // If player's active Pokemon fainted before opponent's turn (e.g. recoil, status)
-    // Opponent shouldn't attack. This shouldn't happen with current moves, but good practice.
+    // Safety check: If player's Pokemon fainted before opponent's turn (e.g. status effect - not implemented yet)
     if (activePokemon.hp <= 0) {
          logMessage(`${activePokemon.name} has already fainted.`);
-         isPlayerTurn = true;
+         isPlayerTurn = true; // Give turn back to player to switch
          generateBattleActionButtons();
          actionPrompt.textContent = "Your Pokémon fainted! Choose another action (Switch recommended).";
-         disableMoveButtons(); // Can't fight
-         return; // Skip opponent attack
+         // Disable fight button directly
+         if(battleButtonsContainer.querySelector('button:first-child')) {
+            battleButtonsContainer.querySelector('button:first-child').disabled = true;
+         }
+         return; // Skip opponent's attack
     }
 
-
     logMessage(`${opponentPokemon.name}'s turn...`);
+    // Simple AI: Choose a random move
     const chosenMove = opponentPokemon.moves[Math.floor(Math.random() * opponentPokemon.moves.length)];
-    const damage = calculateDamage(chosenMove.power);
+    const damage = calculateDamage(chosenMove.power); // Calculate damage
 
-    activePokemon.hp = Math.max(0, activePokemon.hp - damage);
+    activePokemon.hp = Math.max(0, activePokemon.hp - damage); // Apply damage to player's active Pokémon
     logMessage(`${opponentPokemon.name} used ${chosenMove.name}! It dealt ${damage} damage.`);
-    updateBattleDisplay();
+    updateBattleDisplay(); // Update HP bars
 
+    // Check if player's active Pokémon fainted
     if (activePokemon.hp <= 0) {
         logMessage(`${activePokemon.name} fainted!`);
+        // Check if player has other usable Pokémon
         const availableIndex = player.party.findIndex((p, index) => index !== player.activePokemonIndex && p.hp > 0);
         if(availableIndex !== -1) {
+            // If other Pokémon available, prompt player to switch on their turn
             isPlayerTurn = true;
-            generateBattleActionButtons(); // Let player choose action (likely switch)
-             actionPrompt.textContent = "Your Pokémon fainted! Choose another action (Switch recommended).";
-             // Disable fight button directly might be better
-             battleButtonsContainer.querySelector('button:first-child').disabled = true; // Disable "Fight"
-
+            generateBattleActionButtons(); // Show main actions
+            actionPrompt.textContent = "Your Pokémon fainted! Choose another action (Switch recommended).";
+             // Disable fight button directly as current Pokemon is fainted
+             if(battleButtonsContainer.querySelector('button:first-child')) {
+                battleButtonsContainer.querySelector('button:first-child').disabled = true;
+             }
         } else {
-             endBattle(false); // Player loses - no more Pokémon
+             // No other Pokémon left - Player loses
+             endBattle(false);
         }
-
     } else {
+        // Player's Pokémon survived, switch back to player's turn
         isPlayerTurn = true;
-        generateBattleActionButtons();
+        generateBattleActionButtons(); // Show main action buttons
         actionPrompt.textContent = "Choose your action:";
     }
 }
 
-// Damage calculation (uses move power, scaled down)
+// Damage calculation (scaled down)
 function calculateDamage(basePower) {
-    // Add randomness: +/- 20%
-    const variation = basePower * 0.2;
-    const randomFactor = Math.random() * variation * 2 - variation; // Between -variation and +variation
+    const variation = basePower * 0.2; // +/- 20% randomness
+    const randomFactor = Math.random() * variation * 2 - variation;
     const rawDamage = basePower + randomFactor;
-
-    // --- SCALING ---
-    // Divide the raw damage to make battles last longer.
-    // Adjust the divisor (e.g., 1.5, 2.0, 2.5) to fine-tune battle length.
-    const scalingFactor = 2.0;
+    const scalingFactor = 3.0; // Damage reduction factor (higher = less damage)
     const scaledDamage = rawDamage / scalingFactor;
-    // --- END SCALING ---
-
-    // Ensure at least 1 damage is dealt and round the result
-    return Math.max(1, Math.round(scaledDamage));
+    return Math.max(1, Math.round(scaledDamage)); // Ensure min 1 damage, round result
 }
 
+// --- Utility Functions for Buttons ---
 function disableAllButtons() {
+    // Disable all buttons within the battle view, except Return to Map if visible
     battleView.querySelectorAll('button').forEach(button => {
-        // Keep return to map button enabled if it's shown
         if (button.id !== 'return-to-map-button' || button.classList.contains('hidden')) {
             button.disabled = true;
         }
     });
 }
 function enableMoveButtons() {
+    // Enable move buttons only if the move container is visible
     if (!playerMovesContainer.classList.contains('hidden')) {
         playerMovesContainer.querySelectorAll('button').forEach(button => button.disabled = false);
     }
 }
+// Enabling other buttons (Items, Switch, Actions) is handled when they are generated/shown
 
 
+// --- End Battle Logic ---
 function endBattle(playerWon) {
-    battleOver = true;
-    disableAllButtons(); // Disable actions except potentially Return to Map
-    justEvolved = false;
+    battleOver = true; // Set battle over flag
+    disableAllButtons(); // Disable most actions
+    justEvolved = false; // Reset evolution flag for this battle end sequence
 
-    if (playerWon && opponentPokemon.hp <= 0) { // Ensure opponent actually fainted (not capture)
+    // Check if the win was due to fainting the opponent (not capture)
+    if (playerWon && opponentPokemon.hp <= 0) {
         logMessage("You won the battle!");
-        player.wins++;
+        player.wins++; // Increment win counter
 
+        // --- Calculate Drops (Potion Guaranteed) ---
         calculateDrops();
 
-        const pokemonThatWon = getActivePlayerPokemon(); // Check the Pokémon active at the end
-        // Check if it exists and has evolution data
-         if (pokemonThatWon && pokemonThatWon.evolvesAtWins && player.wins >= pokemonThatWon.evolvesAtWins && pokemonThatWon.evolution) {
-            evolvePokemon(player.activePokemonIndex, pokemonThatWon.evolution);
-            justEvolved = true;
-         }
+        // --- Post-Battle Healing ---
+        const healPercent = 0.25; // Heal 25% of max HP
+        let healMessages = [];
+        let didHeal = false;
+        player.party.forEach(pokemon => {
+            // Heal only non-fainted, non-full HP Pokemon
+            if (pokemon.hp > 0 && pokemon.hp < pokemon.maxHp) {
+                const healAmount = Math.floor(pokemon.maxHp * healPercent);
+                const hpBefore = pokemon.hp;
+                pokemon.hp = Math.min(pokemon.maxHp, pokemon.hp + healAmount);
+                if (pokemon.hp > hpBefore) {
+                    healMessages.push(`${pokemon.name} recovered ${pokemon.hp - hpBefore} HP.`);
+                    didHeal = true;
+                }
+            }
+        });
+        if (didHeal) {
+             logMessage("Your team recovered some energy!");
+             healMessages.forEach(msg => logMessage(msg));
+        }
 
-        updateInventoryDisplay();
+        // --- Evolution Check ---
+        const pokemonThatWon = getActivePlayerPokemon(); // Check the Pokémon active at the end
+        if (pokemonThatWon && pokemonThatWon.evolvesAtWins && player.wins >= pokemonThatWon.evolvesAtWins && pokemonThatWon.evolution) {
+            evolvePokemon(player.activePokemonIndex, pokemonThatWon.evolution);
+            justEvolved = true; // Set flag if evolution occurs
+        }
+
+        // --- Update Displays ---
+        updateInventoryDisplay(); // Update wins count on map display data
+        // Update battle display immediately if healing happened and no evolution, or after evolution message delay
+        if (didHeal && !justEvolved) updateBattleDisplay();
         if (justEvolved) {
-             setTimeout(() => { // Delay update slightly after evolution message
-                 updateBattleDisplay();
-                 generatePlayerMoveButtons(); // Update moves display if needed
-             }, 1100); // After evolution log message
+             setTimeout(() => { updateBattleDisplay(); generatePlayerMoveButtons(); }, 1100);
         }
 
     } else if (!playerWon) { // Lost battle
         logMessage("You lost the battle...");
         const allFainted = player.party.every(p => p.hp <= 0);
         if (allFainted) {
-            logMessage("All your Pokémon have fainted! Returning to start...");
-            // Could implement a penalty or forced heal here
+            logMessage("All your Pokémon have fainted! Returning to map...");
+            // Future: Implement proper game over handling
         }
     }
-    // Handle capture case (already handled in usePokeball)
+    // Note: Capture success bypasses this function's win logic
 
-    // Determine final prompt after potential evolution message delay
+    // Set final prompt and show Return button (with delay if evolution happened)
      setTimeout(() => {
-        if (battleOver && !returnToMapButton.classList.contains('hidden')) return; // Don't overwrite if capture happened
-
-         actionPrompt.textContent = playerWon ? "Victory!" : "Defeated!";
-         if (justEvolved) actionPrompt.textContent += " ...and Evolved!";
-         returnToMapButton.classList.remove('hidden');
-         returnToMapButton.disabled = false; // Ensure it's usable
-     }, justEvolved ? 1200 : 100); // Longer delay if evolution occurred
-
+        // Only update prompt/button if capture didn't already do it
+        if (returnToMapButton.classList.contains('hidden')) {
+             actionPrompt.textContent = playerWon ? "Victory!" : "Defeated!";
+             if (justEvolved) actionPrompt.textContent += " ...and Evolved!";
+             returnToMapButton.classList.remove('hidden');
+             returnToMapButton.disabled = false; // Ensure button is usable
+        }
+     }, justEvolved ? 1200 : 100); // Delay allows evolution message to display first
 }
 
 
+// --- Item Drop Logic (Potion Guaranteed on Win) ---
 function calculateDrops() {
     let dropsMessage = "Spoils: ";
     let droppedSomething = false;
 
-    if (Math.random() < 0.25) { // 25% Potion
-        player.inventory.potions++;
-        dropsMessage += "Potion x1 ";
-        droppedSomething = true;
-    }
-    if (Math.random() < 0.40) { // 40% Poké Ball
+    // --- Potion Drop (Guaranteed) ---
+    player.inventory.potions++;
+    dropsMessage += "Potion x1 ";
+    droppedSomething = true;
+    // --- End Potion Drop ---
+
+    // --- Poké Ball Drop (Random Chance) ---
+    if (Math.random() < 0.40) { // 40% chance for Poké Ball
         player.inventory.pokeballs++;
         dropsMessage += "Poké Ball x1 ";
         droppedSomething = true;
     }
+    // --- End Poké Ball Drop ---
 
     if (droppedSomething) {
-        logMessage(dropsMessage);
-        updateInventoryDisplay(); // Update map inventory immediately
+        logMessage(dropsMessage); // Log what was dropped
+        updateInventoryDisplay(); // Update inventory display on map immediately
     }
 }
 
+// --- Evolution Logic ---
 function evolvePokemon(partyIndex, evolutionSpeciesName) {
+    // Handle the evolution of a Pokémon in the player's party
     const pokemonToEvolve = player.party[partyIndex];
-    const evolutionData = pokemonData[evolutionSpeciesName];
+    const evolutionData = pokemonData[evolutionSpeciesName]; // Get data for the evolved form
 
+    // Safety check
     if (!evolutionData || !pokemonToEvolve) {
         console.error("Evolution data or Pokémon not found:", evolutionSpeciesName, pokemonToEvolve);
         return;
@@ -716,40 +831,49 @@ function evolvePokemon(partyIndex, evolutionSpeciesName) {
 
     logMessage(`What? ${pokemonToEvolve.name} is evolving!`);
 
+    // Update Pokémon stats and info, maintaining current HP percentage
     const hpPercent = pokemonToEvolve.hp / pokemonToEvolve.maxHp;
     pokemonToEvolve.speciesName = evolutionData.speciesName;
     pokemonToEvolve.name = evolutionData.name;
     pokemonToEvolve.maxHp = evolutionData.maxHp;
-    pokemonToEvolve.hp = Math.max(1, Math.round(evolutionData.maxHp * hpPercent));
+    pokemonToEvolve.hp = Math.max(1, Math.round(evolutionData.maxHp * hpPercent)); // Apply HP percent to new max HP
     pokemonToEvolve.sprite = evolutionData.sprite;
-    pokemonToEvolve.moves = JSON.parse(JSON.stringify(evolutionData.moves));
+    pokemonToEvolve.moves = JSON.parse(JSON.stringify(evolutionData.moves)); // Get new moveset (deep copy)
+    // Remove evolution condition after evolving
     pokemonToEvolve.evolvesAtWins = undefined;
     pokemonToEvolve.evolution = undefined;
 
+    // Log completion message after a short delay for effect
     setTimeout(() => {
         logMessage(`Congratulations! Your ${pokemonToEvolve.speciesName} evolved into ${evolutionData.name}!`);
-    }, 1000);
+    }, 1000); // 1 second delay
 }
 
 
 // --- Event Listeners ---
+// Listen for keyboard input for map movement
 document.addEventListener('keydown', handleKeydown);
+// Listen for clicks on the "Return to Map" button
 returnToMapButton.addEventListener('click', () => {
-     // Check if active pokemon fainted and force switch if needed before going to map
+     // Before returning, check if the active Pokemon fainted during the battle end sequence
       if (getActivePlayerPokemon().hp <= 0) {
+          // Find the first available healthy Pokemon to switch to
           const availableIndex = player.party.findIndex((p, index) => index !== player.activePokemonIndex && p.hp > 0);
           if (availableIndex !== -1) {
-              player.activePokemonIndex = availableIndex;
+              player.activePokemonIndex = availableIndex; // Set new active Pokemon
               console.log(`Switched active Pokemon to ${getActivePlayerPokemon().name} before returning to map.`);
           } else {
-              // Handle game over state if needed upon returning to map
+              // Handle case where all Pokemon are fainted upon trying to return
               console.log("Returning to map with all Pokemon fainted.");
+              // Future: Could trigger game over or forced heal here
           }
       }
-
+     // Switch back to map view
      switchMode('map');
-     battleOver = false;
+     battleOver = false; // Reset battle flag
 });
 
 // --- Initial Game Setup ---
+// Start the game initialization process when the window finishes loading
 window.onload = initializeGame;
+

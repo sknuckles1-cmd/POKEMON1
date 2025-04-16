@@ -21,7 +21,7 @@ const pokemonData = {
 // --- Player Object ---
 let player = {
     party: [],
-    inventory: { potions: 2, pokeballs: 5 },
+    inventory: { potions: 10, pokeballs: 5 },
     wins: 0,
     activePokemonIndex: 0,
     money: 150

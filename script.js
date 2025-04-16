@@ -19,7 +19,7 @@ const pokemonData = {
 // --- Player Object ---
 let player = {
     party: [], // Holds the player's current Pokémon
-    inventory: { potions: 2, pokeballs: 5 }, // Items the player possesses
+    inventory: { potions: 10, pokeballs: 5 }, // Items the player possesses
     wins: 0, // Counter for battles won (used for evolution)
     activePokemonIndex: 0, // Index in the party array of the currently fighting Pokémon
     money: 150 // Currency for the store

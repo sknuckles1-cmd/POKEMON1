@@ -248,7 +248,91 @@ h1, h2, h3 {
 #return-to-map-button:hover {
     background-color: #218838;
 }
+/* --- Add these styles --- */
 
+/* Starter Selection View Styling */
+#starter-select-view {
+    width: 100%;
+    max-width: 600px;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+#starter-select-view h2 {
+    color: #495057;
+    margin-bottom: 25px;
+}
+
+#starter-options {
+    display: flex;
+    justify-content: space-around; /* Distribute starters evenly */
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 20px; /* Space between starter cards */
+}
+
+.starter-card {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 15px;
+    width: 150px; /* Fixed width for cards */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.starter-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.starter-card img {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 10px;
+    image-rendering: pixelated;
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.starter-card h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-bottom: 15px;
+}
+
+.starter-card button {
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #007bff; /* Blue select button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.starter-card button:hover {
+    background-color: #0056b3;
+}
+
+/* --- Ensure other styles are kept --- */
+
+/* Make sure other views are hidden initially if not already */
+#map-view.hidden,
+#battle-view.hidden,
+#store-view.hidden {
+    display: none !important;
+}
 
 /* Message Log */
 #message-log-container {

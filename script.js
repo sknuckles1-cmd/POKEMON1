@@ -1,19 +1,28 @@
-// --- Basic Pokémon Data ---
-// In a real game, this would come from a larger database or API
+// --- Updated Pokémon Data with Movesets ---
 const pokemonData = {
     pikachu: {
         name: "Pikachu",
         hp: 100,
         maxHp: 100,
-        attack: 18, // Base attack power
-        sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png' // Example sprite URL
+        sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+        moves: [
+            { name: "Thunder Shock", power: 40, type: "Electric" },
+            { name: "Quick Attack", power: 35, type: "Normal" },
+            { name: "Iron Tail", power: 50, type: "Steel" },
+            { name: "Spark", power: 30, type: "Electric" }
+        ]
     },
     charmander: {
         name: "Charmander",
         hp: 120,
         maxHp: 120,
-        attack: 15,
-        sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png' // Example sprite URL
+        sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
+        moves: [
+            { name: "Scratch", power: 40, type: "Normal" },
+            { name: "Ember", power: 45, type: "Fire" },
+            { name: "Dragon Breath", power: 50, type: "Dragon" },
+            { name: "Fire Fang", power: 48, type: "Fire" }
+        ]
     }
 };
 
@@ -36,41 +45,50 @@ const opponentMaxHpEl = document.getElementById('opponent-max-hp');
 const opponentHealthBarEl = document.getElementById('opponent-health-bar');
 const opponentSpriteEl = document.getElementById('opponent-sprite');
 
-const attackButton = document.getElementById('attack-button');
+const playerMovesContainer = document.getElementById('player-moves'); // Container for move buttons
 const messageLog = document.getElementById('message-log');
 const resetButton = document.getElementById('reset-button');
 
-
 // --- Game Functions ---
 
-// Initialize the game state and UI
 function initializeBattle() {
-    // Create deep copies to avoid modifying original data during battle
-    playerPokemon = { ...pokemonData.pikachu };
-    opponentPokemon = { ...pokemonData.charmander };
+    playerPokemon = JSON.parse(JSON.stringify(pokemonData.pikachu)); // Deep copy
+    opponentPokemon = JSON.parse(JSON.stringify(pokemonData.charmander)); // Deep copy
 
     isPlayerTurn = true;
     battleOver = false;
 
-    updateDisplay(); // Update UI with initial values
+    updateDisplay();
+    generatePlayerMoveButtons(); // Create move buttons for the player
 
-    // Set Sprites (handle potential errors)
     playerSpriteEl.src = playerPokemon.sprite;
-    playerSpriteEl.onerror = () => playerSpriteEl.src = 'placeholder.png'; // Fallback image
+    playerSpriteEl.onerror = () => playerSpriteEl.src = 'placeholder.png';
     opponentSpriteEl.src = opponentPokemon.sprite;
-    opponentSpriteEl.onerror = () => opponentSpriteEl.src = 'placeholder.png'; // Fallback image
+    opponentSpriteEl.onerror = () => opponentSpriteEl.src = 'placeholder.png';
 
-
-    // Clear message log and add start message
     messageLog.innerHTML = '<p>Battle starts!</p>';
     logMessage(`Your ${playerPokemon.name} faces ${opponentPokemon.name}!`);
 
-    // Ensure buttons are in the correct state
-    attackButton.disabled = false;
-    resetButton.style.display = 'none'; // Hide reset button initially
+    enableMoveButtons(); // Make sure buttons are usable
+    resetButton.style.display = 'none';
 }
 
-// Update the UI elements (names, HP, health bars)
+// Create buttons for the player's moves
+function generatePlayerMoveButtons() {
+    playerMovesContainer.innerHTML = ''; // Clear existing buttons
+
+    playerPokemon.moves.forEach(move => {
+        const button = document.createElement('button');
+        button.textContent = move.name;
+        // Add type/power as data attributes if needed later
+        // button.dataset.type = move.type;
+        // button.dataset.power = move.power;
+        button.addEventListener('click', () => handlePlayerMove(move));
+        playerMovesContainer.appendChild(button);
+    });
+}
+
+// Update the UI elements
 function updateDisplay() {
     // Player
     playerNameEl.textContent = playerPokemon.name;
@@ -85,98 +103,104 @@ function updateDisplay() {
     updateHealthBar(opponentHealthBarEl, opponentPokemon.hp, opponentPokemon.maxHp);
 }
 
-// Update a specific health bar's width and color
+// Update a specific health bar
 function updateHealthBar(barElement, currentHp, maxHp) {
-    const percentage = Math.max(0, (currentHp / maxHp) * 100); // Ensure percentage doesn't go below 0
+    const percentage = Math.max(0, (currentHp / maxHp) * 100);
     barElement.style.width = `${percentage}%`;
-
-    // Remove previous color classes
-    barElement.classList.remove('low', 'critical');
-
-    // Add new color class based on percentage
-    if (percentage < 25) {
-        barElement.classList.add('critical');
-    } else if (percentage < 50) {
-        barElement.classList.add('low');
-    }
+    barElement.className = 'health-bar'; // Reset classes
+    if (percentage < 25) barElement.classList.add('critical');
+    else if (percentage < 50) barElement.classList.add('low');
 }
 
-
-// Add a message to the battle log
+// Add a message to the log
 function logMessage(message) {
     const newMessage = document.createElement('p');
     newMessage.textContent = message;
     messageLog.appendChild(newMessage);
-    // Auto-scroll to the bottom
     messageLog.scrollTop = messageLog.scrollHeight;
 }
 
-// Handle the player's attack action
-function playerAttack() {
-    if (!isPlayerTurn || battleOver) return; // Do nothing if not player's turn or battle is over
+// Handle the player choosing a move
+function handlePlayerMove(move) {
+    if (!isPlayerTurn || battleOver) return;
 
-    attackButton.disabled = true; // Disable button during attack sequence
+    disableMoveButtons(); // Disable buttons during attack sequence
 
-    // Calculate damage (add slight randomness)
-    const damage = calculateDamage(playerPokemon.attack);
-    opponentPokemon.hp = Math.max(0, opponentPokemon.hp - damage); // Prevent HP < 0
+    // Calculate damage based on the chosen move's power
+    const damage = calculateDamage(move.power);
+    opponentPokemon.hp = Math.max(0, opponentPokemon.hp - damage);
 
-    logMessage(`${playerPokemon.name} attacks! Deals ${damage} damage.`);
+    logMessage(`${playerPokemon.name} used ${move.name}! Deals ${damage} damage.`);
     updateDisplay();
 
-    // Check if opponent fainted
+    // Check faint
     if (opponentPokemon.hp <= 0) {
         logMessage(`${opponentPokemon.name} fainted! You win!`);
         endBattle();
     } else {
-        // Switch to opponent's turn after a short delay
         isPlayerTurn = false;
-        setTimeout(opponentTurn, 1500); // Wait 1.5 seconds before opponent attacks
+        setTimeout(opponentTurn, 1500); // Opponent's turn after delay
     }
 }
 
-// Handle the opponent's turn (simple AI)
+// Handle the opponent's turn (chooses a random move)
 function opponentTurn() {
     if (battleOver) return;
 
     logMessage(`${opponentPokemon.name}'s turn...`);
 
-    // Calculate damage
-    const damage = calculateDamage(opponentPokemon.attack);
-    playerPokemon.hp = Math.max(0, playerPokemon.hp - damage); // Prevent HP < 0
+    // Simple AI: Choose a random move from the opponent's moveset
+    const availableMoves = opponentPokemon.moves;
+    const randomMoveIndex = Math.floor(Math.random() * availableMoves.length);
+    const chosenMove = availableMoves[randomMoveIndex];
 
-    logMessage(`${opponentPokemon.name} attacks! Deals ${damage} damage.`);
+    // Calculate damage based on the opponent's chosen move
+    const damage = calculateDamage(chosenMove.power);
+    playerPokemon.hp = Math.max(0, playerPokemon.hp - damage);
+
+    logMessage(`${opponentPokemon.name} used ${chosenMove.name}! Deals ${damage} damage.`);
     updateDisplay();
 
-    // Check if player fainted
+    // Check faint
     if (playerPokemon.hp <= 0) {
         logMessage(`${playerPokemon.name} fainted! You lose!`);
         endBattle();
     } else {
-        // Switch back to player's turn
         isPlayerTurn = true;
-        attackButton.disabled = false; // Re-enable attack button
+        enableMoveButtons(); // Re-enable player's move buttons
     }
 }
 
-// Simple damage calculation (can be expanded)
-function calculateDamage(baseAttack) {
-    // Add some randomness: damage = baseAttack +/- 20% (approx)
-    const variation = baseAttack * 0.2;
-    const randomFactor = Math.random() * variation * 2 - variation; // Between -variation and +variation
-    return Math.max(1, Math.round(baseAttack + randomFactor)); // Ensure at least 1 damage
+// Damage calculation (uses move power)
+function calculateDamage(basePower) {
+    // Add randomness: +/- 20%
+    const variation = basePower * 0.2;
+    const randomFactor = Math.random() * variation * 2 - variation;
+    return Math.max(1, Math.round(basePower + randomFactor)); // Minimum 1 damage
+}
+
+// Disable player move buttons
+function disableMoveButtons() {
+    const buttons = playerMovesContainer.querySelectorAll('button');
+    buttons.forEach(button => button.disabled = true);
+}
+
+// Enable player move buttons
+function enableMoveButtons() {
+    const buttons = playerMovesContainer.querySelectorAll('button');
+    buttons.forEach(button => button.disabled = false);
 }
 
 // End the battle
 function endBattle() {
     battleOver = true;
-    attackButton.disabled = true;
+    disableMoveButtons(); // Disable moves
     resetButton.style.display = 'block'; // Show reset button
 }
 
 // --- Event Listeners ---
-attackButton.addEventListener('click', playerAttack);
-resetButton.addEventListener('click', initializeBattle); // Reset button restarts the game
+// Move button listeners are added in generatePlayerMoveButtons()
+resetButton.addEventListener('click', initializeBattle);
 
 // --- Initial Game Setup ---
-window.onload = initializeBattle; // Start the game when the page loads
+window.onload = initializeBattle;

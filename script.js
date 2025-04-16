@@ -602,10 +602,22 @@ function opponentTurn() {
     }
 }
 
+// Damage calculation (uses move power, scaled down)
 function calculateDamage(basePower) {
+    // Add randomness: +/- 20%
     const variation = basePower * 0.2;
-    const randomFactor = Math.random() * variation * 2 - variation;
-    return Math.max(1, Math.round(basePower + randomFactor));
+    const randomFactor = Math.random() * variation * 2 - variation; // Between -variation and +variation
+    const rawDamage = basePower + randomFactor;
+
+    // --- SCALING ---
+    // Divide the raw damage to make battles last longer.
+    // Adjust the divisor (e.g., 1.5, 2.0, 2.5) to fine-tune battle length.
+    const scalingFactor = 2.0;
+    const scaledDamage = rawDamage / scalingFactor;
+    // --- END SCALING ---
+
+    // Ensure at least 1 damage is dealt and round the result
+    return Math.max(1, Math.round(scaledDamage));
 }
 
 function disableAllButtons() {

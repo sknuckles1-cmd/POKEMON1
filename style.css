@@ -1,0 +1,127 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+
+h1, h3 {
+    color: #333;
+}
+
+#game-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    gap: 20px; /* Add space between cards */
+}
+
+.pokemon-card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    width: 45%; /* Adjust width for spacing */
+}
+
+.pokemon-card img {
+    margin-top: 10px;
+    border: 1px solid #eee;
+    background-color: #fafafa;
+    min-height: 96px; /* Ensure space even if image fails */
+}
+
+.health-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    height: 20px;
+    margin: 10px 0;
+    overflow: hidden; /* Ensure inner bar stays contained */
+    border: 1px solid #c0c0c0;
+}
+
+.health-bar {
+    background-color: #4CAF50; /* Green */
+    height: 100%;
+    width: 100%; /* Start at full health */
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out; /* Smooth transition */
+}
+
+.health-bar.low {
+    background-color: #ff9800; /* Orange */
+}
+
+.health-bar.critical {
+    background-color: #f44336; /* Red */
+}
+
+
+#actions button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    transition: background-color 0.2s;
+}
+
+#actions button:hover {
+    background-color: #357abd;
+}
+
+#actions button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+#message-log-container {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#message-log {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    height: 100px;
+    overflow-y: scroll; /* Add scroll for long logs */
+    padding: 10px;
+    margin-top: 5px;
+    text-align: left;
+    border-radius: 5px;
+}
+
+#message-log p {
+    margin: 5px 0;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 3px;
+}
+
+#message-log p:last-child {
+    border-bottom: none;
+}
+
+#reset-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+#reset-button:hover {
+    background-color: #d32f2f;
+}
